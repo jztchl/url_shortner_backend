@@ -14,12 +14,12 @@ class URLRequest(BaseModel):
     original_url: HttpUrl
      
 app = FastAPI(title="URL Shortener")
-ALLOWED_ORIGINS=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+ALLOWED_ORIGINS=os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 BASE_URL=os.getenv("BASE_URL", "http://localhost:9000")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[ALLOWED_ORIGINS],  # React dev server
+    allow_origins=ALLOWED_ORIGINS,  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
