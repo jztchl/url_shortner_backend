@@ -5,17 +5,21 @@ from db import SessionLocal, ShortUrls
 from cache import set_url, get_url
 from pydantic import BaseModel, HttpUrl
 import hashlib, string
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
 
-
+load_dotenv()
 class URLRequest(BaseModel):
     original_url: HttpUrl
      
 app = FastAPI(title="URL Shortener")
-from fastapi.middleware.cors import CORSMiddleware
+ALLOWED_ORIGINS=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+BASE_URL=os.getenv("BASE_URL", "http://localhost:9000")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_origins=[ALLOWED_ORIGINS],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,14 +54,14 @@ def shorten_url(request: URLRequest, db: Session = Depends(get_db)):
     code = hash_url(str(request.original_url))
     if db.query(ShortUrls).filter(ShortUrls.short_code == code).first():
          set_url(code, str(request.original_url))
-         return {"short_url": f"http://localhost:9000/{code}"}
+         return {"short_url": f"BASE_URL/{code}"}
     url_entry = ShortUrls(original_url=str(request.original_url), short_code=code)
     db.add(url_entry)
     db.commit()
     db.refresh(url_entry)
     set_url(code, str(request.original_url))
 
-    return {"short_url": f"http://localhost:9000/{code}"}
+    return {"short_url": f"BASE_URL/{code}"}
 
 @app.get("/{code}")
 def redirect_to_url(code: str, db: Session = Depends(get_db)):
