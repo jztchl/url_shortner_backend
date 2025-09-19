@@ -54,14 +54,14 @@ def shorten_url(request: URLRequest, db: Session = Depends(get_db)):
     code = hash_url(str(request.original_url))
     if db.query(ShortUrls).filter(ShortUrls.short_code == code).first():
          set_url(code, str(request.original_url))
-         return {"short_url": f"BASE_URL/{code}"}
+         return {"short_url": f"{BASE_URL}/{code}"}
     url_entry = ShortUrls(original_url=str(request.original_url), short_code=code)
     db.add(url_entry)
     db.commit()
     db.refresh(url_entry)
     set_url(code, str(request.original_url))
 
-    return {"short_url": f"BASE_URL/{code}"}
+    return {"short_url": f"{BASE_URL}/{code}"}
 
 @app.get("/{code}")
 def redirect_to_url(code: str, db: Session = Depends(get_db)):
